@@ -1,0 +1,243 @@
+# You may add here your
+# server {
+# ...
+# }
+# statements for each of your virtual hosts to this file
+
+##
+# You should look at the following URL's in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# http://wiki.nginx.org/Pitfalls
+# http://wiki.nginx.org/QuickStart
+# http://wiki.nginx.org/Configuration
+#
+# Generally, you will want to move this file somewhere, and start with a clean
+# file but keep this around for reference. Or just disable in sites-enabled.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+
+server {
+  # Set to port 8080 to use Varnish as a reverse proxy
+  # To bypass Varnish, disable Varnish and set the port to 80
+  listen   80; 
+  #listen   [::]:8080 default ipv6only=on; ## listen for ipv6
+
+  root {{ website_root }}{{ item.name }};
+  index index.html index.htm;
+
+  # Make site accessible
+  server_name {{ item.urls }};
+
+  # required for nginx to recognize lack of trailing slash in some
+  # cases (e.g., /phpmyadmin on localhost)
+  server_name_in_redirect off;
+
+  # Set file upload size
+  client_max_body_size {{ php_upload_max_filesize }};
+
+  #location / {
+  # # First attempt to serve request as file, then
+  # # as directory, then fall back to index.html
+  # try_files $uri $uri/ /index.html;
+  #}
+
+  # Begin Drupal config
+  # Source: http://wiki.nginx.org/Drupal
+  location = /favicon.ico {
+                log_not_found off;
+                access_log off;
+        }
+ 
+        location = /robots.txt {
+                allow all;
+                log_not_found off;
+                access_log off;
+        }
+ 
+        # This matters if you use drush
+        location = /backup {
+                deny all;
+        }
+ 
+        # Very rarely should these ever be accessed outside of your lan
+        location ~* \.(txt|log)$ {
+                allow 192.168.0.0/16;
+                deny all;
+        }
+ 
+        location ~ \..*/.*\.php$ {
+                return 403;
+        }
+ 
+        location / {
+                # This is cool because no php is touched for static content
+                try_files $uri @rewrite;
+        }
+ 
+        location @rewrite {
+                # Some modules enforce no slash (/) at the end of the URL
+                # Else this rewrite block wouldn't be needed (GlobalRedirect)
+                rewrite ^/(.*)$ /index.php?q=$1;
+        }
+ 
+        location ~ \.php$ {
+                fastcgi_split_path_info ^(.+\.php)(/.+)$;
+                #NOTE: You should have "cgi.fix_pathinfo = 0;" in php.ini
+                include fastcgi_params;
+                fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+                fastcgi_intercept_errors on;
+                #fastcgi_pass unix:/tmp/phpfpm.sock;
+                fastcgi_pass 127.0.0.1:9000;
+          #fastcgi_read_timeout 300;
+  }
+ 
+        # Fighting with ImageCache? This little gem is amazing.
+        location ~ ^/sites/.*/files/imagecache/ {
+                try_files $uri @rewrite;
+        }
+        # Catch image styles for D7 too.
+        location ~ ^/sites/.*/files/styles/ {
+                try_files $uri @rewrite;
+        }
+ 
+        location ~* \.(js|css|png|jpg|jpeg|gif|ico)$ {
+                expires max;
+                log_not_found off;
+        } 
+  # end Drupal config
+
+
+
+
+  # Used config from 
+  # http://arstechnica.com/business/news/2011/11/a-faster-web-server-ripping-out-apache-for-nginx.ars 
+  # to attempt a socket connection because the author said it was slightly better
+  # This failed, so now using the boilerplate non-socket config lower in the file. 
+  # May add try_files to remove security risk.
+  #location ~ \.php$ { 
+  # try_files $uri =404; fastcgi_pass unix:/var/run/php5-fpm.soc;
+  #}
+
+  location /doc {
+    root /usr/share;
+    autoindex on;
+    allow 127.0.0.1;
+    deny all;
+  }
+
+  location /images {
+    root /usr/share;
+    autoindex off;
+  }
+
+        location /phpmyadmin {
+               root /usr/share/;
+               index index.php index.html index.htm;
+               location ~ ^/phpmyadmin/(.+\.php)$ {
+                       try_files $uri =404;
+                       root /usr/share/;
+                       fastcgi_pass 127.0.0.1:9000;
+                       #fastcgi_pass unix:/tmp/phpfpm.sock;
+                       fastcgi_index index.php;
+                       fastcgi_param SCRIPT_FILENAME $request_filename;
+                       include /etc/nginx/fastcgi_params;
+               }
+               location ~* ^/phpmyadmin/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+                       root /usr/share/;
+               }
+        }
+        location /phpMyAdmin {
+               rewrite ^/* /phpmyadmin last;
+        }
+
+        location /stripe {
+               root /srv/www/bitasso-main;
+               index index.php index.html index.htm;
+               location ~ ^/stripe/(.+\.php)$ {
+                       try_files $uri =404;
+                       root /usr/share/;
+                       fastcgi_pass 127.0.0.1:9000;
+                       #fastcgi_pass unix:/tmp/phpfpm.sock;
+                       fastcgi_index index.php;
+                       fastcgi_param SCRIPT_FILENAME $request_filename;
+                       include /etc/nginx/fastcgi_params;
+               }
+               location ~* ^/stripe/(.+\.(jpg|jpeg|gif|css|png|js|ico|html|xml|txt))$ {
+                       root /usr/share/;
+               }
+        }
+        
+
+
+  #error_page 404 /404.html;
+
+  # redirect server error pages to the static page /50x.html
+  #
+  #error_page 500 502 503 504 /50x.html;
+  #location = /50x.html {
+  # root /usr/share/nginx/www;
+  #}
+
+  # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+  #
+  #location ~ \.php$ {
+  # proxy_pass http://127.0.0.1;
+  #}
+
+  # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+  #
+  #location ~ \.php$ {
+  # try_files $uri =404;
+  # fastcgi_pass 127.0.0.1:9000;
+  # fastcgi_index index.php;
+  # include fastcgi_params;
+  #}
+
+  # deny access to .htaccess files, if Apache's document root
+  # concurs with nginx's one
+  #
+  #location ~ /\.ht {
+  # deny all;
+  #}
+}
+
+
+# another virtual host using mix of IP-, name-, and port-based configuration
+#
+#server {
+# listen 8000;
+# listen somename:8080;
+# server_name somename alias another.alias;
+# root html;
+# index index.html index.htm;
+#
+# location / {
+#   try_files $uri $uri/ /index.html;
+# }
+#}
+
+
+# HTTPS server
+#
+#server {
+# listen 443;
+# server_name localhost;
+#
+# root html;
+# index index.html index.htm;
+#
+# ssl on;
+# ssl_certificate cert.pem;
+# ssl_certificate_key cert.key;
+#
+# ssl_session_timeout 5m;
+#
+# ssl_protocols SSLv3 TLSv1;
+# ssl_ciphers ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv3:+EXP;
+# ssl_prefer_server_ciphers on;
+#
+# location / {
+#   try_files $uri $uri/ /index.html;
+# }
+#}

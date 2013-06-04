@@ -1,0 +1,55 @@
+
+# Nginx
+#######################
+# nginx
+# /etc/nginx/nginx.conf
+nginx_worker_processes: 2
+
+# PHP
+#######################
+# php.ini for web (php-fpm)
+php_max_execution_time: 60
+php_memory_limit: 256M
+php_post_max_size: 32M
+php_upload_max_filesize: 32M #also used to set nginx client_max_body_size
+# php_display_errors: 'On'
+# php_display_startup_errors: 'On'
+# php_html_errors: 'On'
+# php_date_timezone: {{'US/Central'}}  #RD - normally not set - use system?
+
+#php.ini for cli (Drush)
+drush_max_execution_time: 300
+drush_memory_limit: -1  # -1 (unlimited) is the default for cli
+drush_upload_max_filesize: 128M
+drush_post_max_size: 128M
+
+# php-apc.ini
+# apc_rfc1867: '1'   #upload progress display
+apc_shm_size: 64M  #set to just above what app uses. Too small --> costly cache rebuilds
+# apc_shm_segments: '1' #always 1
+# apc_num_files_hint: '0'  #start guess for # files served - for very large sites
+
+# php-fpm settings
+# The default settings are probably good for small sites.
+# dynamic (default) or static - allows fpm to alter # of processes in response to load
+fpm_pm: dynamic
+# The following only apply if pm is dynamic
+fpm_pm_max_children: 10   # Default 10
+fpm_pm_start_servers: 4   # Default 4
+fpm_pm_min_spare_servers: 2   # Default 2
+fpm_pm_max_spare_servers: 6   # Default 6
+
+# MariaDB
+#######################
+# # my.cnf
+# mysql_max_allowed_packet: '128M'
+# mysql_character_set_server: 'utf8'
+# mysql_collation_server: 'utf8_general_ci'
+# innodb_file_per_table: 'innodb_file_per_table'
+
+# Memcached
+#######################
+# memcached.conf  --not implemented - goes in /etc/memcached.conf
+# see http://www.thefanclub.co.za/how-to/how-install-memcached-on-ubuntu-for-drupal
+# default is '64' = 64MB
+memcached_memory: '128'  #MB

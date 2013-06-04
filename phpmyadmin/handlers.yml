@@ -1,0 +1,5 @@
+---     
+# After editing /etc/dbconfig-common/phpmyadmin.conf, this needs to be called
+# This is based on instructions in the above file.
+- name: update phpmyadmin 
+  command: /usr/sbin/dpkg-reconfigure --frontend noninteractive phpmyadmin

@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.require_plugin('vagrant-digitalocean')
+
+Vagrant.configure("2") do |config|
+
+  # Each provider must have an installed box of this name
+  config.vm.box = "base"
+  config.ssh.username = "vagrant"
+  config.vm.synced_folder '.', '/vagrant', :disabled => true
+
+  #VirtualBox config
+  config.vm.provider "virtualbox" do |vb, override|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+    vb.customize ["modifyvm", :id, "--cpus", "1"]
+    override.vm.network :forwarded_port, guest: 80, host: 8080
+    #Port 5099 is for fireball mode
+    override.vm.network :forwarded_port, guest: 5099, host: 5099
+  end
+
+  #Digital Ocean config  
+  config.vm.provider :digital_ocean do |provider, override|
+    provider.client_id = ''
+    provider.api_key = ''
+    provider.image = 'Ubuntu 12.04 x64 Server'
+    provider.region = 'New York 1'
+    provider.size = '1GB'
+    override.ssh.private_key_path = '~/.ssh/id_rsa'
+  end
+
+  # Provisioning
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = "configure-server.yml"
+    ansible.hosts = "vagrant"
+  end
+end

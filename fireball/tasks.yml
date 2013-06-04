@@ -1,0 +1,26 @@
+---   
+# This loads faster if you comment out the first three and just run the apt install.
+# But it doesn't work on Digital Ocean for some reason. It has the precise universe repo
+# but doesn't see this package, whereas it works on VirtualBox
+
+  - name: install fireball dependencies
+    apt: name=$item state=installed    
+    with_items: 
+      - python
+      - python-dev
+      - python-setuptools
+      - build-essential
+
+  - name: install python pip
+    action: easy_install name=pip
+
+  - name: install fireball
+    action: pip name={{ item }} state=present
+    with_items:
+      - pyzmq
+      - pyasn1
+      - PyCrypto
+      - python-keyczar
+           
+  # - name: install fireball
+  #   apt: name=ansible-node-fireball state=installed

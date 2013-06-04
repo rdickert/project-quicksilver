@@ -1,0 +1,6 @@
+---     
+   - name: restart cron 
+     service: name=cron state=restarted
+
+   - name: update tzdata - set time based on /etc/localtime
+     command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata

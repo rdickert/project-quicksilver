@@ -1,0 +1,105 @@
+---    
+  - name: update the hostname to {{ server_hostname }}
+    command: hostname -v {{ server_hostname }}
+
+
+  - name: add the hostname to the hosts file
+    lineinfile: dest=/etc/hosts
+                regexp="^127.0.0.1    {{ server_hostname }}"
+                line="127.0.0.1    {{ server_hostname }}"
+                state=present
+
+  - name: set locale to $locale
+    command: /usr/sbin/update-locale LANG=$locale LC_ALL=$locale
+
+  - name: set /etc/timezone to $timezone
+    template: src=base-config/templates/etc-timezone.j2 dest=/etc/timezone
+    notify: 
+    - update tzdata - set time based on /etc/localtime
+    - restart cron
+
+  - name: install unattended upgrades (defaults to security updates only)
+    apt: name='unattended-upgrades' state=installed
+
+  - name: set up unattended upgrades
+    template: src='base-config/templates/etc-apt-apt.conf.d-10periodic.j2'
+              dest='/etc/apt/apt.conf.d/10periodic'
+    notify: 
+    - restart cron
+
+  - name: install git and git-flow
+    apt: name=$item state=installed    
+    with_items: 
+      - git-core
+      - git-flow
+
+  - name: install zsh
+    apt: name=zsh state=installed 
+
+  - name: create developer group
+    group: name=developer
+
+  - name: create developer shared directory
+    file: dest=/home/developer
+          owner=root
+          group=developer
+          mode=2770
+          state=directory
+
+  - name: set up webmaster
+    user: name=$webmaster_account
+          append=yes
+          groups=sudo,www-data,developer
+          password={{ webmaster_password }}
+          shell=/usr/bin/zsh
+
+  - name: load oh-my-zsh for webmaster
+    git:  repo='git://github.com/robbyrussell/oh-my-zsh.git'
+          dest='/home/{{ webmaster_account }}/.oh-my-zsh'
+
+  - name: configure oh-my-zsh
+    template: src='base-config/templates/home-user-.zshrc.j2'
+              dest='/home/{{ webmaster_account }}/.zshrc'
+
+  - name: set up developer accounts
+    user: name={{ item.name }}
+          append=yes
+          generate_ssh_key=yes
+          groups=sudo,developer,www-data,webmaster
+          password={{ item.password }}
+          shell=/usr/bin/zsh
+    with_items: $developers
+    
+  - name: set up public key access to developer accounts
+    copy: src={{ item.ssh_key_file }}
+          dest=/home/{{ item.name }}/.ssh/authorized_keys
+          force=no
+    only_if: "'{{ item.ssh_key_file }}' != ''"
+    with_items: $developers
+
+  - name: load oh-my-zsh for developers
+    git:  repo='git://github.com/robbyrussell/oh-my-zsh.git'
+          dest='/home/{{ item.name }}/.oh-my-zsh'
+    with_items: $developers
+
+  - name: configure oh-my-zsh
+    template: src='base-config/templates/home-user-.zshrc.j2'
+              dest='/home/{{ item.name }}/.zshrc'
+    with_items: $developers
+
+  - name: set up user accounts
+    user: name=$item
+          shell=/usr/bin/zsh
+    with_items: $users
+
+  # Here's how to set up a password.
+  # You can generate the hash following this: http://serverfault.com/questions/330069/how-to-create-an-sha-512-hashed-password-for-shadow/479036#479036
+  # - name: set up test account/pwd test/test
+  #   user: name=test password=$6$nU6rADHAP6/KdKgi$3VdVukTwOHtdWK6UTkOP3M00zXbCkhFNwnC4YezGKkdrGthCop41wFfQOcu30SZhJi/eDeGydc68.FI543whA1
+
+  - name: install curl 
+    apt: name=curl state=installed 
+
+  - name: install vim 
+    apt: name=vim state=installed 
+

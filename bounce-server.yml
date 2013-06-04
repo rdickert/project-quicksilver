@@ -1,0 +1,31 @@
+---
+- hosts: vagrant
+  user: vagrant 
+  sudo: True
+
+     
+  vars_files:
+    - config.yml
+    - tuning.yml
+
+  tasks:
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+    - name: restart php5-fpm 
+      service: name=php5-fpm state=restarted
+
+    - name: restart mariadb 
+      service: name=mysql state=restarted
+
+    - name: restart memcached 
+      service: name=memcached state=restarted
+
+    - name: restart cron 
+      service: name=cron state=restarted
+
+    - name: update tzdata - set time based on /etc/localtime
+      command: /usr/sbin/dpkg-reconfigure --frontend noninteractive tzdata
+
+    - name: update phpmyadmin 
+      command: /usr/sbin/dpkg-reconfigure --frontend noninteractive phpmyadmin

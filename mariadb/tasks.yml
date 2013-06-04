@@ -1,0 +1,36 @@
+---     
+
+- name: add maridadb apt repo key  #Appears to be idempotent (returns "imported"/"not changed")
+  command: sudo apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xcbcb082a1bb943db
+
+- name: add mariadb apt repo to sources
+  apt_repository: repo='deb http://ftp.osuosl.org/pub/mariadb/repo/10.0/ubuntu precise main'
+
+- name: update apt repo
+  apt: update-cache=yes
+ 
+- name: install mariadb-server 
+  apt: name=mariadb-server state=installed
+
+- name: get python-mysqldb to allow ansible mysql manipulation
+  apt: name=python-mysqldb
+
+# Mariadb installs mysql.so php libraries and php needs to be restarted for them
+# to be available. Caused an error with phpMyAdmin. 
+- name: start maridadb
+  service: name=mysql state=started 
+  notify: 
+    - restart php5-fpm    
+
+- name: set root db password
+  mysql_user: name=root
+              password={{ db_root_password }}
+
+- name: write .my.cnf 
+  template: src='mariadb/templates/my.cnf.j2' 
+            dest='/root/.my.cnf'
+            mode=0400
+  notify:
+  - restart mariadb 
+
+- include: tasks/mysql-secure.yml

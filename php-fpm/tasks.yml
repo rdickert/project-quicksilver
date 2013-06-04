@@ -1,0 +1,42 @@
+---      
+  - name: install php-fpm
+    apt: name=php5-fpm state=installed    
+
+  - name: php install needed modules
+    apt: name=$item state=installed    
+    with_items: 
+       #- php5-common
+       - php5-curl
+       - php5-gd
+       #- php5-mysql
+       #- php5-suhosin  #extra security recommended by ars technica - but breaks Drupal
+       - php5-mcrypt
+       - php5-cli
+       - php-apc
+
+  - name: service run php5-fpm 
+    service: name=php5-fpm state=started 
+
+  - name: write apc.ini
+    template: src='php-fpm/templates/apc.ini.j2' 
+              dest='/etc/php5/conf.d/apc.ini'
+    notify: 
+      - restart php5-fpm
+
+  - name: write fpm php.ini (for web)
+    template: src='php-fpm/templates/fpm.php.ini.j2' 
+              dest='/etc/php5/fpm/php.ini'
+    notify: 
+      - restart php5-fpm
+
+  - name: write cli php.ini (for Drush)
+    template: src='php-fpm/templates/cli.php.ini.j2' 
+              dest='/etc/php5/cli/php.ini'
+    notify: 
+      - restart php5-fpm
+
+  - name: fpm pool config
+    template: src='php-fpm/templates/www.conf.j2' 
+              dest='/etc/php5/fpm/pool.d/www.conf'
+    notify: 
+      - restart php5-fpm

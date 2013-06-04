@@ -1,0 +1,79 @@
+---
+  - name: set up drush site alias in /etc/drush/
+    template: src='site-deployment/templates/alias.drushrc.php.j2'
+              dest='/etc/drush/{{ item.name }}.alias.drushrc.php'
+    with_items: $profiles
+
+  - name: place sites into /etc/nginx/sites-available 
+    template: src='site-deployment/templates/site_config.j2' 
+              dest='/etc/nginx/sites-available/{{ item.name }}' 
+    notify: restart nginx
+    with_items: $profiles
+
+  - name: provision database accounts for drupal sites
+    mysql_user: name={{ item.db }} 
+                password={{ item.db_password }} 
+                priv={{ item.db }}.*:ALL state=present
+    with_items: $profiles
+
+    #TODO: Unique code starts here - pull out dupe code above
+  - name: Download distro with Drush
+    command: /usr/bin/drush @{{ item.name }} pm-download -y {{ item.distro }} 
+             --destination={{ website_root }}{{ item.name }} --drupal-project-rename=drupal
+             creates={{ website_root }}{{ item.name }}/index.php
+    with_items: $profiles
+
+  - name: Move the distro files to site root
+    shell: /bin/mv {{ website_root }}{{ item.name }}/drupal/* {{ website_root }}{{ item.name }}/
+             removes={{ website_root }}{{ item.name }}/drupal/index.php
+    with_items: $profiles
+
+  - name: Remove distro download directory
+    file: path=$website_root{{ item.name }}/drupal/
+          state=absent
+    with_items: $profiles
+
+  - name: Set up database if not installing with Drush
+    mysql_db: name={{ item.db }}
+              state=present
+    only_if: "{{ item.drush_site_install }} == False"
+    with_items: $profiles
+
+  - name: Set up database user if not installing with Drush
+    mysql_user: name={{ item.db }} 
+                password={{ item.db_password }} 
+                priv={{ item.db }}.*:ALL state=present
+                login_user=root 
+                login_password={{ db_root_password }} 
+    only_if: "{{ item.drush_site_install }} == False"
+    with_items: $profiles
+
+  - name: Install profile with Drush
+    command: /usr/bin/drush @{{ item.name }} site-install -y {{ item.profile }} creates={{ website_root }}{{ item.name }}/sites/default/settings.php
+    only_if: "{{ item.drush_site_install }} == True"
+    with_items: $profiles
+    ignore_errors: yes
+
+  - name: Copy Drupal permissions script to vagrant
+    copy: src=drupal/files/set_drupal_file_permissions.sh
+          dest=/home/vagrant/set_drupal_file_permissions.sh
+          owner=vagrant
+          group=vagrant
+          mode=0770
+
+  - name: Reset file permissions for Drupal files
+    shell: /home/vagrant/set_drupal_file_permissions.sh {{ website_root }}{{ item.name }} {{ webmaster_account }}
+    with_items: $profiles
+
+  - name: deactivate nginx default page
+    file: dest='/etc/nginx/sites-enabled/default'
+          state=absent
+
+  - name: activate sites by adding symlinks in sites-active
+    file: src='/etc/nginx/sites-available/{{ item.name }}'
+          dest='/etc/nginx/sites-enabled/{{ item.name }}'
+          state=link
+    notify: 
+    - restart nginx
+    - restart php5-fpm
+    with_items: $profiles

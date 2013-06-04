@@ -1,0 +1,15 @@
+---
+- hosts: vagrant
+  user: vagrant 
+  sudo: True
+
+  vars_files:
+    - config.yml
+    - tuning.yml
+
+  tasks:
+    - include: site-deployment/tasks-archive.yml
+
+  handlers: 
+    - include: nginx/handlers.yml
+    - include: php-fpm/handlers.yml

@@ -1,0 +1,123 @@
+---
+# IMPORTANT: Read this, then delete.
+# Minimal configuration: You need to at least set passwords.
+# There are passwords for: (1) webmaster(linux), (2) developers(linux), (3) users (linux)
+# (4)db root (mariadb). You must also set db username/password for each site to deploy
+# You can copy this file with no changes to try a local deployment (it will install the Panopoly
+# distro on VirtualBox)
+
+# Server Configuration
+#######################
+
+server_hostname: 'myserver'
+
+# In the US, this timezone setter only works with America/[cityname] 
+#DON'T USE: US/Pacific US/Mountain US/Central US/Eastern etc.
+# This list may help: http://php.net/manual/en/timezones.php
+# or look at /usr/share/zoneinfo/
+timezone: America/Denver
+locale: en_US.UTF-8
+
+# A note on passwords and key files: 
+# Passwords must be hashed, not plaintext. The following directions work for
+# generating a password hash in Ubuntu and will likely work for any Debian system.
+# See source: http://serverfault.com/questions/330069/how-to-create-an-sha-512-hashed-password-for-shadow/479036#479036
+# * Run `sudo apt-get install whois`. This will add the `mkpasswd` command
+# * Run `mkpasswd -m sha-512 MyPAsSwOrD $(openssl rand -base64 16 | tr -d '+=' | head -c 16)`
+#   (substitude your desired password for MyPAsSwOrD above)
+# * Copy and paste the output into the password field for the user.
+# (Instructions for OSX and Windows would be helpful - please contribute!)
+#
+# Leaving the password blank does not seem to allow a non-password protected
+# account to be logged-in via SSH or su, but I don't know for a fact that the accounts
+# are safe. Please report security issues!
+#
+# ssh_key_file should be a path to a .pub file and will allow users to log in
+# via ssh without a password.
+
+
+webmaster_account: webmaster
+webmaster_password: ''
+
+# list account names; set to [] to skip
+# developers have sudo privileges & belong to group "developer" - see /base-config/tasks/setup.yml for details
+developers:
+  - name: chris
+    password: ''
+    ssh_key_file: ''
+  - name: robert
+    password: ''
+    ssh_key_file: ''
+
+
+# list account names; set to [] to skip
+users: []
+
+
+# Websites
+#######################
+
+website_root: '/srv/www/'
+
+# To insert the IP address of the server, use the variable:
+# {{ ansible_eth0['ipv4']['address'] }}
+
+# Use this for deploying drush archives (created with the `drush archive-dump` command)
+# When the script completes, your site should be up and running
+
+# Set to [] to skip. Add more sites as shown below (works for profiles, too)
+sites: []
+# sites:
+#   - name: site-main
+#     urls: "127.0.0.1 localhost example.com"
+#     drush_uri: "example.com"
+#     archive: 'site-deployment/sites/testdb.20130423_045640.tar.gz'
+#     db: 'maindb'  #used for both the username and database name
+#     db_password: 'plaintext password from your archived site'
+#   - name: site-dev
+#     urls: "127.0.0.1 localhost dev.example.com"
+#     drush_uri: "dev.example.com"
+#     archive: 'site-deployment/sites/testdb.20130423_045640.tar.gz'
+#     db: 'devdb'  #used for both the username and database name
+#     db_password: 'plaintext password from your archived site'
+
+# Use this to deploy new empty Drupal websites. If you set drush_site_install to true,
+# Drush will attempt to deploy the distro with reasonable defaults. If you want to control
+# the installation, set this to False and your website will start at its install.php script
+# In this case, you will need the database credentials listed below (the database will be 
+# provisioned for you). 
+#
+# Use the distro/profile specify the version of Drupal you want. See http://drupal.org/project/distributions
+# See Some typical choices:
+#   Basic Drupal: drupal/standard
+#   Panopoly (very nice starter site - try this if you're new to Drupal): panopoly/panopoly
+#   Commerce Kickstart: commerce_kickstart/commerce_kickstart
+#   Open Enterprise: openenterprise/openenterprise
+
+#profiles: []
+profiles:
+  - name: testsite
+    db: "test"
+    db_password: ''
+    distro: panopoly
+    profile: panopoly
+    urls: "127.0.0.1 localhost {{ ansible_eth0['ipv4']['address'] }}"
+    drush_uri: "testsite.com"
+    uid1_mail: test@example.com
+    uid1_name: admin
+    uid1_pass: admin
+    site_mail: donotreply@example.com
+    site_name: Panopoly
+    drush_site_install: True
+
+# Database root account
+#######################
+
+db_root_password: ''
+
+# This has been tested on SendGrid but should be adaptable for other services or Gmail.
+# Pull requests welcome.
+# smtp_server: smtp.sendgrid.net:587
+smtp_server: 
+smtp_user: username
+smtp_password: ''

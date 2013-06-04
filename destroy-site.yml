@@ -1,0 +1,52 @@
+---      
+#TODO: remove site from /etc/hosts
+- hosts: vagrant
+  user: vagrant
+  sudo: true 
+  vars_files:
+    - config.yml
+    - tuning.yml
+  vars:
+  - site: "--none"
+
+  tasks:
+  - action: debug msg="Deleting all files and restarting Nginx."
+
+  - fail: msg='Usage- ansible-playbook destroy-site.yml --extra-vars "site=[sitename] db=[db name]" This command will remove the site files, Nginx configuration, database & user, and Drush alias. This command is destructive and irreversible; please be sure you have backups if you ever want this content back.'
+    only_if: "'$site' == '--none'"
+
+  - name: deactivate site by removing symlink in sites-active
+    file: dest='/etc/nginx/sites-enabled/{{ site }}'
+          state=absent
+    notify: 
+    - restart nginx
+
+  - name: Delete {{ site }} from /etc/nginx/sites-available/
+    file: dest='/etc/nginx/sites-available/{{ site }}'
+          state=absent
+
+  - name: Delete {{ website_root }}{{ site }} 
+    file: dest='{{ website_root }}{{ site }}'
+          state=absent
+    # file: dest='/srv/www/bitasso-main'
+
+  - name: Remove Drush alias for {{ site }}
+    file: dest='/etc/drush/{{ site }}.alias.drushrc.php'
+          state=absent
+  
+  - name: Delete database {{ db }}
+    mysql_db: db={{ db }}
+              state=absent
+    only_if: is_set('$db')
+
+  - name: Delete database account {{ db }}
+    mysql_user: name={{ db }} 
+                state=absent
+    only_if: is_set('$db')
+
+  
+
+  handlers:
+  - name: restart nginx
+    service: name=nginx state=restarted
+

@@ -1,0 +1,48 @@
+--- 
+
+#Do not run this command with fireball and a large archive: slow or hangs permanently
+- name: copy drush archives to {{ website_root }}
+  copy: src={{ item.archive }}
+        dest={{ website_root }}{{ item.name }}_archive.tar.gz
+  with_items: $sites
+
+# For fireball mode, copy command does not work for large files. Attempt below doesn't work, but might be a start
+# See https://groups.google.com/d/msg/ansible-project/mLz0RDRnGOY/9bxmwCZKNtEJ
+# - name: copy drush archives to {{ website_root }}
+#   local_action: command rsync -avz --port=2222 {{ item.archive }}  robert@$ansible_hostname:{{ website_root }}{{ item.name }}_archive.tar.gz 
+#   with_items: $sites
+
+- name: set up drush site alias in /etc/drush/
+  template: src='site-deployment/templates/alias.drushrc.php.j2'
+            dest='/etc/drush/{{ item.name }}.alias.drushrc.php'
+  with_items: $sites
+
+- name: place sites into /etc/nginx/sites-available 
+  template: src='site-deployment/templates/site_config.j2' 
+            dest='/etc/nginx/sites-available/{{ item.name }}' 
+  notify: restart nginx
+  with_items: $sites
+
+- name: provision database accounts for drupal sites
+  mysql_user: name={{ item.db }} 
+              password={{ item.db_password }} 
+              priv={{ item.db }}.*:ALL state=present
+  with_items: $sites
+
+- name: Deploy site from archive with drush
+  command: /usr/bin/drush -y @{{ item.name }} archive-restore {{ website_root }}{{ item.name }}_archive.tar.gz
+           creates={{ website_root }}{{ item.name }}/index.php
+  with_items: $sites
+
+- name: deactivate nginx default page
+  file: dest='/etc/nginx/sites-enabled/default'
+        state=absent
+
+- name: activate sites by adding symlinks in sites-active
+  file: src='/etc/nginx/sites-available/{{ item.name }}'
+        dest='/etc/nginx/sites-enabled/{{ item.name }}'
+        state=link
+  notify: 
+  - restart nginx
+  - restart php5-fpm
+  with_items: $sites

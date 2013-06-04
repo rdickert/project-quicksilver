@@ -1,0 +1,48 @@
+---      
+
+- name: make sure memcache is installed
+  apt: name=$item state=installed
+  with_items:
+    - memcached
+    - php5-memcache
+
+- name: install pecl & pear
+  apt: name=$item state=installed
+  with_items:
+    - libevent-dev
+    - php5-dev
+    - php-pear
+    - make
+
+- name: install pecl memcache extension
+  # printf from https://github.com/lanshark/ansible-server-playbooks/blob/master/common-tasks/ubuntu-memcached.yml
+  # Sends "yes[enter]" to the pecl prompt in the middle of this - cool.
+  shell: printf "yes\n" | sudo pecl install memcache
+         creates=/usr/share/php/.registry/.channel.pecl.php.net/memcache.reg
+
+- name: write etc/php5/conf.d/memcache.ini 
+  template: src=drupal/templates/etc-php5-conf-d-memcache-ini.j2
+            dest=/etc/php5/conf.d/memcache.ini
+  notify: 
+    - restart php5-fpm
+
+- name: Install Console_Table (drush prerequisite)
+  command: pear install Console_Table 
+           creates=/usr/share/php/.registry/console_table.reg
+
+- name: Add Drush to pear channels
+  command: pear channel-discover pear.drush.org 
+           creates=/usr/share/php/.channels/pear.drush.org.reg
+
+- name: Install Drush
+  command: sudo pear install drush/drush 
+           creates=/usr/share/php/.registry/.channel.pear.drush.org/drush.reg
+
+# Installing Drush with apt is faster, but you get an old version
+# - name: Install Drush
+#   apt: name=drush
+
+# Will use this directory to store site aliases
+- name: create directory /etc/drush/
+  file: dest='/etc/drush'
+        state=directory             
