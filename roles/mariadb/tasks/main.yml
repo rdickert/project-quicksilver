@@ -33,4 +33,4 @@
   notify:
   - restart mariadb 
 
-- include: tasks/mysql-secure.yml
+- include: mysql-secure.yml
