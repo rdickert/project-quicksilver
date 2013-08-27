@@ -3,6 +3,9 @@
 - hosts: vagrant
   user: vagrant
   sudo: true 
+  vars_files:
+    - config.yml
+    - tuning.yml
   vars:
   - site: "--none"
 

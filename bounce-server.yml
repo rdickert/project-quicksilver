@@ -3,8 +3,9 @@
   user: vagrant 
   sudo: True
 
-     
   vars_files:
+    - config.yml
+    - tuning.yml
 
   tasks:
     - name: restart nginx

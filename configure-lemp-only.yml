@@ -5,6 +5,9 @@
   sudo: yes
   gather_facts: no
   connection: ssh
+  vars_files:
+    - config.yml
+    - tuning.yml
 
   roles:
     - fireball

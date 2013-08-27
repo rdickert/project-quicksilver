@@ -16,10 +16,10 @@ Project Quicksilver uses [Ansible](http://ansible.cc/) to provision a full, high
 * Clone or Download the Project Quicksilver repo. 
 * Go to your project directory and run:
 
-        cp config-example.yml host_vars/vagrant
+        cp config-example.yml config.yml
         cp Vagrantfile-example Vagrantfile
 
-* You will need to edit `host_vars/vagrant` to add your passwords and other config details, but you can leave it unchanged if you just want to test it (it will build a single Drupal site (on the Panopoly distro on VirtualBox - to try out phpMyAdmin, you must at least set a root database password). 
+* You will need to edit `config.yml` to add your passwords and other config details, but you can leave it unchanged if you just want to test it (it will build a single Drupal site (on the Panopoly distro on VirtualBox - to try out phpMyAdmin, you must at least set a root database password). 
 * You will need to add your Digital Ocean credentials to your `Vagrantfile` if you wish to provision with it. If only using VirtualBox, you can leave it unchanged.
 * If using Digital Ocean, install the [vagrant-digitalocean plugin](https://github.com/smdahlen/vagrant-digitalocean)
 

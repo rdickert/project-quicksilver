@@ -2,6 +2,9 @@
 - hosts: vagrant
   user: vagrant 
   sudo: True
+  vars_files:
+    - config.yml
+    - tuning.yml
 
   tasks:
     - include: roles/site-deployment/tasks/tasks-archive.yml
