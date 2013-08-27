@@ -13,17 +13,21 @@
     command: /usr/sbin/update-locale LANG=$locale LC_ALL=$locale
 
   - name: set /etc/timezone to $timezone
-    template: src=base-config/templates/etc-timezone.j2 dest=/etc/timezone
+    template: src=etc-timezone.j2 dest=/etc/timezone
     notify: 
     - update tzdata - set time based on /etc/localtime
     - restart cron
+
+  - name: install python-software-properties
+    apt: name='python-software-properties' state=installed update_cache=yes
+
 
   - name: install unattended upgrades (defaults to security updates only)
     apt: name='unattended-upgrades' state=installed
 
   - name: set up unattended upgrades
-    template: src='base-config/templates/etc-apt-apt.conf.d-10periodic.j2'
-              dest='/etc/apt/apt.conf.d/10periodic'
+    template: src=etc-apt-apt.conf.d-10periodic.j2
+              dest=/etc/apt/apt.conf.d/10periodic
     notify: 
     - restart cron
 
@@ -58,7 +62,7 @@
           dest='/home/{{ webmaster_account }}/.oh-my-zsh'
 
   - name: configure oh-my-zsh
-    template: src='base-config/templates/home-user-.zshrc.j2'
+    template: src=home-user-.zshrc.j2
               dest='/home/{{ webmaster_account }}/.zshrc'
 
   - name: set up developer accounts
@@ -83,7 +87,7 @@
     with_items: $developers
 
   - name: configure oh-my-zsh
-    template: src='base-config/templates/home-user-.zshrc.j2'
+    template: src=home-user-.zshrc.j2
               dest='/home/{{ item.name }}/.zshrc'
     with_items: $developers
 

@@ -8,7 +8,7 @@
               priv=*.*:ALL state=present
 
 - name: configure phpmyadmin
-  template: src='phpmyadmin/templates/phpmyadmin.conf.j2'
-            dest='/etc/dbconfig-common/phpmyadmin.conf'
+  template: src=phpmyadmin.conf.j2
+            dest=/etc/dbconfig-common/phpmyadmin.conf
   notify: 
     - update phpmyadmin            

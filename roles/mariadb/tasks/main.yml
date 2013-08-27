@@ -27,8 +27,8 @@
               password={{ db_root_password }}
 
 - name: write .my.cnf 
-  template: src='mariadb/templates/my.cnf.j2' 
-            dest='/root/.my.cnf'
+  template: src=my.cnf.j2 
+            dest=/root/.my.cnf
             mode=0400
   notify:
   - restart mariadb 

@@ -21,6 +21,9 @@
       - pyasn1
       - PyCrypto
       - python-keyczar
+
+  - name: start fireball
+    action: fireball
            
   # - name: install fireball
   #   apt: name=ansible-node-fireball state=installed

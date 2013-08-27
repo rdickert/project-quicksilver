@@ -5,18 +5,9 @@
   sudo: yes
   gather_facts: no
   connection: ssh
-  vars_files:
-    - config.yml
-    - tuning.yml
 
-  tasks:
-    - name: install python-software-properties
-      apt: name='python-software-properties' state=installed update_cache=yes
-
-    - include: fireball/tasks.yml 
-
-    - name: start fireball
-      action: fireball
+  roles:
+    - fireball
   
 # Switch to fireball mode
 - hosts: vagrant
@@ -25,43 +16,13 @@
   connection: fireball
   # port: 5100
 
-  vars_files:
-    - config.yml
-    - tuning.yml
-  
-  tasks:
-    - include: base-config/tasks.yml 
-    - include: nginx/tasks.yml 
-    - include: php-fpm/tasks.yml
-    - include: mariadb/tasks.yml 
-    - include: memcache/tasks.yml 
-    - include: phpmyadmin/tasks.yml 
-    - include: ssmtp/tasks.yml 
-    - include: drupal/tasks.yml 
-    - include: site-deployment/tasks-distro.yml 
-
-  handlers:
-    - include: base-config/handlers.yml  
-    - include: nginx/handlers.yml  
-    - include: php-fpm/handlers.yml  
-    - include: mariadb/handlers.yml  
-    - include: memcache/handlers.yml  
-    - include: phpmyadmin/handlers.yml  
-    - include: drupal/handlers.yml  
-    - include: site-deployment/handlers.yml  
-
-# Archive deployment may move large .tar.gz files. This does not perform well
-# in fireball mode, so switch back to SSH
-- hosts: vagrant
-  user: vagrant
-  sudo: yes
-  vars_files:
-    - config.yml
-    - tuning.yml
-
-  tasks:
-    - include: site-deployment/tasks-archive.yml 
-
-  handlers:
-    - include: nginx/handlers.yml  
-    - include: php-fpm/handlers.yml  
+  roles:
+    - base-config
+    - nginx
+    - php-fpm
+    - mariadb
+    - memcache
+    - phpmyadmin
+    - ssmtp
+    - drupal
+    - site-deployment

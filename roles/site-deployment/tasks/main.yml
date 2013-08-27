@@ -1,12 +1,12 @@
 ---
   - name: set up drush site alias in /etc/drush/
-    template: src='site-deployment/templates/alias.drushrc.php.j2'
-              dest='/etc/drush/{{ item.name }}.alias.drushrc.php'
+    template: src=alias.drushrc.php.j2
+              dest=/etc/drush/{{ item.name }}.alias.drushrc.php
     with_items: $profiles
 
   - name: place sites into /etc/nginx/sites-available 
-    template: src='site-deployment/templates/site_config.j2' 
-              dest='/etc/nginx/sites-available/{{ item.name }}' 
+    template: src=site_config.j2 
+              dest=/etc/nginx/sites-available/{{ item.name }} 
     notify: restart nginx
     with_items: $profiles
 
@@ -66,14 +66,55 @@
     with_items: $profiles
 
   - name: deactivate nginx default page
-    file: dest='/etc/nginx/sites-enabled/default'
+    file: dest=/etc/nginx/sites-enabled/default
           state=absent
 
   - name: activate sites by adding symlinks in sites-active
-    file: src='/etc/nginx/sites-available/{{ item.name }}'
-          dest='/etc/nginx/sites-enabled/{{ item.name }}'
+    file: src=/etc/nginx/sites-available/{{ item.name }}
+          dest=/etc/nginx/sites-enabled/{{ item.name }}
           state=link
     notify: 
     - restart nginx
     - restart php5-fpm
     with_items: $profiles
+
+  - name: copy drush archives to {{ website_root }}
+    connection: ssh
+    copy: src={{ item.archive }}
+          dest={{ website_root }}{{ item.name }}_archive.tar.gz
+    with_items: $sites
+  
+  - name: set up drush site alias in /etc/drush/
+    template: src=alias.drushrc.php.j2
+              dest=/etc/drush/{{ item.name }}.alias.drushrc.php
+    with_items: $sites
+  
+  - name: place sites into /etc/nginx/sites-available 
+    template: src=site_config.j2 
+              dest=/etc/nginx/sites-available/{{ item.name }} 
+    notify: restart nginx
+    with_items: $sites
+  
+  - name: provision database accounts for drupal sites
+    mysql_user: name={{ item.db }} 
+                password={{ item.db_password }} 
+                priv={{ item.db }}.*:ALL state=present
+    with_items: $sites
+  
+  - name: Deploy site from archive with drush
+    command: /usr/bin/drush -y @{{ item.name }} archive-restore {{ website_root }}{{ item.name }}_archive.tar.gz
+             creates={{ website_root }}{{ item.name }}/index.php
+    with_items: $sites
+  
+  - name: deactivate nginx default page
+    file: dest=/etc/nginx/sites-enabled/default
+          state=absent
+  
+  - name: activate sites by adding symlinks in sites-active
+    file: src=/etc/nginx/sites-available/{{ item.name }}
+          dest=/etc/nginx/sites-enabled/{{ item.name }}
+          state=link
+    notify: 
+    - restart nginx
+    - restart php5-fpm
+    with_items: $sites
