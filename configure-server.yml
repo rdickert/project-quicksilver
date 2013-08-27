@@ -15,6 +15,9 @@
   # sudo: True
   connection: fireball
   # port: 5100
+  vars_files:
+    - config.yml
+    - tuning.yml
 
   roles:
     - base-config

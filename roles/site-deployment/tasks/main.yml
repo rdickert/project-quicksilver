@@ -55,7 +55,7 @@
     ignore_errors: yes
 
   - name: Copy Drupal permissions script to vagrant
-    copy: src=drupal/files/set_drupal_file_permissions.sh
+    copy: src=../../drupal/files/set_drupal_file_permissions.sh
           dest=/home/vagrant/set_drupal_file_permissions.sh
           owner=vagrant
           group=vagrant
