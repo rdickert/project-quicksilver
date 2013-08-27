@@ -3,7 +3,7 @@
   apt: name=ssmtp state=installed
 
 - name: configure ssmtp
-  template: src='ssmtp/templates/etc-ssmtp-ssmtp.conf.j2'
-            dest='/etc/ssmtp/ssmtp.conf'
+  template: src=etc-ssmtp-ssmtp.conf.j2
+            dest=/etc/ssmtp/ssmtp.conf
   # notify: 
-  #   - restart ssmtp            
+  #   - restart ssmtp
