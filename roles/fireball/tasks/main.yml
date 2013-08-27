@@ -3,24 +3,15 @@
 # But it doesn't work on Digital Ocean for some reason. It has the precise universe repo
 # but doesn't see this package, whereas it works on VirtualBox
 
-  - name: install fireball dependencies
+  - name: install fireball
     apt: name=$item state=installed    
     with_items: 
       - python
       - python-dev
       - python-setuptools
-      - build-essential
-
-  - name: install python pip
-    action: easy_install name=pip
-
-  - name: install fireball
-    action: pip name={{ item }} state=present
-    with_items:
-      - pyzmq
-      - pyasn1
-      - PyCrypto
       - python-keyczar
+      - python-zmq
+      - build-essential
 
   - name: start fireball
     action: fireball
