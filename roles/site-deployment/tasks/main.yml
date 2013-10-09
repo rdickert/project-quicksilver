@@ -78,4 +78,4 @@
     - restart php5-fpm
     with_items: $profiles
 
-    - include: tasks-archive.yml
+  - include: tasks-archive.yml

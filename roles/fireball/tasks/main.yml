@@ -3,6 +3,9 @@
 # But it doesn't work on Digital Ocean for some reason. It has the precise universe repo
 # but doesn't see this package, whereas it works on VirtualBox
 
+  - name: update apt cache
+    apt: update_cache=yes
+
   - name: install fireball
     apt: name=$item state=installed    
     with_items: 
