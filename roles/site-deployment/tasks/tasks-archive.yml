@@ -2,6 +2,7 @@
 
 #Do not run this command with fireball and a large archive: slow or hangs permanently
 - name: copy drush archives to {{ website_root }}
+  connection: ssh
   copy: src={{ item.archive }}
         dest={{ website_root }}{{ item.name }}_archive.tar.gz
   with_items: $sites

@@ -21,7 +21,7 @@
          creates=/usr/share/php/.registry/.channel.pecl.php.net/memcache.reg
 
 - name: write etc/php5/conf.d/memcache.ini 
-  template: src=drupal/templates/etc-php5-conf-d-memcache-ini.j2
+  template: src=etc-php5-conf-d-memcache-ini.j2
             dest=/etc/php5/conf.d/memcache.ini
   notify: 
     - restart php5-fpm

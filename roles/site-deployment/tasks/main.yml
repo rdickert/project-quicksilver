@@ -1,12 +1,12 @@
 ---
   - name: set up drush site alias in /etc/drush/
-    template: src='site-deployment/templates/alias.drushrc.php.j2'
-              dest='/etc/drush/{{ item.name }}.alias.drushrc.php'
+    template: src=alias.drushrc.php.j2
+              dest=/etc/drush/{{ item.name }}.alias.drushrc.php
     with_items: $profiles
 
   - name: place sites into /etc/nginx/sites-available 
-    template: src='site-deployment/templates/site_config.j2' 
-              dest='/etc/nginx/sites-available/{{ item.name }}' 
+    template: src=site_config.j2 
+              dest=/etc/nginx/sites-available/{{ item.name }} 
     notify: restart nginx
     with_items: $profiles
 
@@ -55,7 +55,7 @@
     ignore_errors: yes
 
   - name: Copy Drupal permissions script to vagrant
-    copy: src=drupal/files/set_drupal_file_permissions.sh
+    copy: src=../../drupal/files/set_drupal_file_permissions.sh
           dest=/home/vagrant/set_drupal_file_permissions.sh
           owner=vagrant
           group=vagrant
@@ -66,14 +66,16 @@
     with_items: $profiles
 
   - name: deactivate nginx default page
-    file: dest='/etc/nginx/sites-enabled/default'
+    file: dest=/etc/nginx/sites-enabled/default
           state=absent
 
   - name: activate sites by adding symlinks in sites-active
-    file: src='/etc/nginx/sites-available/{{ item.name }}'
-          dest='/etc/nginx/sites-enabled/{{ item.name }}'
+    file: src=/etc/nginx/sites-available/{{ item.name }}
+          dest=/etc/nginx/sites-enabled/{{ item.name }}
           state=link
     notify: 
     - restart nginx
     - restart php5-fpm
     with_items: $profiles
+
+  - include: tasks-archive.yml

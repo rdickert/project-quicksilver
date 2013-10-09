@@ -9,15 +9,9 @@
     - config.yml
     - tuning.yml
 
-  tasks:
-    - name: install python-software-properties
-      apt: name='python-software-properties' state=installed update_cache=yes
+  roles:
+    - fireball
 
-    - include: fireball/tasks.yml 
-
-    - name: start fireball
-      action: fireball
-  
 # Switch to fireball mode
 - hosts: vagrant
   user: vagrant 
@@ -25,23 +19,11 @@
   connection: fireball
   # port: 5100
 
-  vars_files:
-    - config.yml
-    - tuning.yml
-  
-  tasks:
-    - include: base-config/tasks.yml 
-    - include: nginx/tasks.yml 
-    - include: php-fpm/tasks.yml
-    - include: mariadb/tasks.yml 
-    - include: memcache/tasks.yml 
-    - include: phpmyadmin/tasks.yml 
-    - include: ssmtp/tasks.yml 
-
-  handlers:
-    - include: base-config/handlers.yml  
-    - include: nginx/handlers.yml  
-    - include: php-fpm/handlers.yml  
-    - include: mariadb/handlers.yml  
-    - include: memcache/handlers.yml  
-    - include: phpmyadmin/handlers.yml  
+  roles:
+    - base-config
+    - nginx
+    - php-fpm
+    - mariadb
+    - memcache
+    - phpmyadmin
+    - ssmtp
