@@ -7,11 +7,12 @@ Project Quicksilver uses [Ansible](http://ansible.cc/) to provision a full, high
 * [Install VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [Install Vagrant 1.2 or higher](http://downloads.vagrantup.com/)
 * Set up Ubuntu 12.04 box `base` on vagrant - `vagrant box add base http://files.vagrantup.com/precise64.box`
-* [Install Ansible](http://ansible.cc/docs/gettingstarted.html) (mac users may want to try [these instructions](https://weluse.de/blog/installing-ansible-on-os-x.html), and Linux users can try the [setup instructions using Pip](http://ansible.cc/docs/gettingstarted.html#via-pip)). Sorry, Ansible does not support Windows at this time[(although there are discussions about it)](https://groups.google.com/forum/#!topic/ansible-project/17YZIgArn2g), but you could run Project Quicksilver from a VirtualBox vm or a Linux server, if you have one you can ssh into.
+* [Install Ansible](http://ansible.cc/docs/gettingstarted.html) The most fail-safe way appears to be to [install with Pip](http://ansible.cc/docs/gettingstarted.html#via-pip). Sorry, Ansible does not support Windows at this time[(although there are discussions about it)](https://groups.google.com/forum/#!topic/ansible-project/17YZIgArn2g), but you could run Project Quicksilver from a VirtualBox vm or a Linux server, if you have one you can ssh into.
 * Set up fireball. This makes ansible much faster.
 
         sudo easy_install pip    
-        sudo pip install pyzmq PyCrypto python-keyczar 
+        sudo pip install pyzmq PyCrypto 
+        sudo pip install --pre python-keyczar 
 
 * Clone or Download the Project Quicksilver repo. 
 * Go to your project directory and run:
