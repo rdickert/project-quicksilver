@@ -1,4 +1,6 @@
 #Project Quicksilver
+Version 0.1.1
+
 ##Single-command High-Performance Drupal/LEMP Deployment
 
 Project Quicksilver uses [Ansible](http://ansible.cc/) to provision a full, high-performance LEMP stack with [Memcached](http://www.memcached.org/), [phpMyAdmin](http://www.phpmyadmin.net/home_page/index.php), and SSMTP and a complete install of [Drupal](https://drupal.org/home) configured and running -- on a local or live virtual machine using Vagrant with a single command, often in less than 15 minutes. For more details, [read the blog post](http://robertdickert.com/blog/2013/06/03/announcing-project-quicksilver/).
@@ -7,7 +9,7 @@ Project Quicksilver uses [Ansible](http://ansible.cc/) to provision a full, high
 * [Install VirtualBox](https://www.virtualbox.org/wiki/Downloads)
 * [Install Vagrant 1.2 or higher](http://downloads.vagrantup.com/)
 * Set up Ubuntu 12.04 box `base` on vagrant - `vagrant box add base http://files.vagrantup.com/precise64.box`
-* [Install Ansible](http://ansible.cc/docs/gettingstarted.html) The most fail-safe way appears to be to [install with Pip](http://ansible.cc/docs/gettingstarted.html#via-pip). Sorry, Ansible does not support Windows at this time[(although there are discussions about it)](https://groups.google.com/forum/#!topic/ansible-project/17YZIgArn2g), but you could run Project Quicksilver from a VirtualBox vm or a Linux server, if you have one you can ssh into.
+* [Install Ansible](http://ansible.cc/docs/gettingstarted.html) The most fail-safe way appears to be to [install with pip](http://ansible.cc/docs/gettingstarted.html#via-pip). Sorry, Ansible does not support Windows at this time[(although there are discussions about it)](https://groups.google.com/forum/#!topic/ansible-project/17YZIgArn2g), but you could run Project Quicksilver from a VirtualBox vm or a Linux server, if you have one you can ssh into.
 * Set up fireball. This makes ansible much faster.
 
         sudo easy_install pip    
@@ -114,4 +116,4 @@ All of the Drupal-specific tools will be omitted. You will have to create your o
 
 **No Warranty:** These scripts make permanent system-level changes to your server. It is possible to overwrite or destroy websites and to make a server perform poorly or crash. Also, there could be security flaws that would expose your server to attack. Although efforts have been made to make them safe, you use them at your own risk. In addition, if you choose to use the Digital Ocean plugin, these scripts can incur usage fees. Use at your own risk.
 
-**Additional Warning:** Version 0.1.0 is the first working version and is not fully tested. Expect there to be bugs! There could be security flaws, and this configuration is not hardened. Please evaluate the scripts for yourself and give feedback about the project so it can be improved.
+**Additional Warning:** Version 0.1.x is the first working version and is not fully tested. Expect there to be bugs! There could be security flaws, and this configuration is not hardened. Please evaluate the scripts for yourself and give feedback about the project so it can be improved.
