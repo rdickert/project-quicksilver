@@ -107,3 +107,6 @@
   - name: install vim 
     apt: name=vim state=installed 
 
+  - name: install software-properties-common
+    apt: name=software-properties-common state=installed 
+
